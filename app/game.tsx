@@ -1,9 +1,8 @@
-import { router } from "expo-router";
 import * as Haptics from "expo-haptics";
+import { router } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Dimensions, Pressable, StyleSheet, Text, View } from "react-native";
 
-import { getVibrationEnabled } from "../src/storage/settingsStorage";
 import GameOverModal from "../src/components/GameOverModal";
 import { hasHitObstacle } from "../src/game/collision";
 import {
@@ -13,11 +12,11 @@ import {
     JUMP_FORCE,
     KITE_SIZE,
     OBSTACLE_GAP,
-    OBSTACLE_SPEED,
     OBSTACLE_WIDTH,
 } from "../src/game/constants";
 import { Obstacle } from "../src/game/types";
 import { getBestScore, saveBestScore } from "../src/storage/scoreStorage";
+import { getVibrationEnabled } from "../src/storage/settingsStorage";
 import { colors } from "../src/theme/colors";
 
 const screen = Dimensions.get("window");
@@ -27,6 +26,26 @@ const SCREEN_HEIGHT = screen.height;
 
 const KITE_X = 80;
 const START_KITE_Y = SCREEN_HEIGHT / 2 - KITE_SIZE / 2;
+
+function getObstacleSpeed(score: number): number {
+  if (score >= 36) {
+    return 4.8;
+  }
+
+  if (score >= 23) {
+    return 4.4;
+  }
+
+  if (score >= 13) {
+    return 4.0;
+  }
+
+  if (score >= 6) {
+    return 3.6;
+  }
+
+  return 3.2;
+}
 
 function createObstacle(id: number, x: number): Obstacle {
     const minGapY = 110;
@@ -108,7 +127,7 @@ export default function GameScreen() {
             setObstacles((currentObstacles) => {
                 let updatedObstacles = currentObstacles.map((obstacle) => ({
                     ...obstacle,
-                    x: obstacle.x - OBSTACLE_SPEED,
+                    x: obstacle.x - getObstacleSpeed(score),
                 }));
 
                 updatedObstacles = updatedObstacles.map((obstacle) => {
@@ -148,7 +167,7 @@ export default function GameScreen() {
         }, GAME_LOOP_MS);
 
         return () => clearInterval(gameLoop);
-    }, [endGame, hasStarted, isGameOver, isPaused, kiteY, velocity]);
+    }, [endGame, hasStarted, isGameOver, isPaused, kiteY, score, velocity]);
 
     async function jump() {
         if (isGameOver) {
