@@ -3,6 +3,7 @@ import * as Haptics from "expo-haptics";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Dimensions, Pressable, StyleSheet, Text, View } from "react-native";
 
+import { getVibrationEnabled } from "../src/storage/settingsStorage";
 import GameOverModal from "../src/components/GameOverModal";
 import { hasHitObstacle } from "../src/game/collision";
 import {
@@ -53,16 +54,20 @@ export default function GameScreen() {
     const [isGameOver, setIsGameOver] = useState(false);
     const [hasStarted, setHasStarted] = useState(false);
     const [isPaused, setIsPaused] = useState(false);
+    const [isVibrationEnabled, setIsVibrationEnabled] = useState(true);
 
     const nextObstacleId = useRef(3);
 
     useEffect(() => {
-        async function loadBestScore() {
+        async function loadInitialData() {
             const storedBestScore = await getBestScore();
+            const storedVibrationEnabled = await getVibrationEnabled();
+
             setBestScore(storedBestScore);
+            setIsVibrationEnabled(storedVibrationEnabled);
         }
 
-        loadBestScore();
+        loadInitialData();
     }, []);
 
     const endGame = useCallback(async () => {
@@ -71,13 +76,15 @@ export default function GameScreen() {
         }
 
         setIsGameOver(true);
-        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        if (isVibrationEnabled) {
+            await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        }
 
         if (score > bestScore) {
             setBestScore(score);
             await saveBestScore(score);
         }
-    }, [bestScore, isGameOver, score]);
+    }, [bestScore, isGameOver, isVibrationEnabled, score]);
 
     useEffect(() => {
         if (isGameOver || !hasStarted || isPaused) {
@@ -153,7 +160,9 @@ export default function GameScreen() {
         }
 
         setVelocity(JUMP_FORCE);
-        await Haptics.selectionAsync();
+        if (isVibrationEnabled) {
+            await Haptics.selectionAsync();
+        }
     }
 
     function restartGame() {
