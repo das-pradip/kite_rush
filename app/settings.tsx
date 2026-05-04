@@ -1,6 +1,7 @@
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { resetBestScore } from "../src/storage/scoreStorage";
 
 import GameButton from "../src/components/GameButton";
 import {
@@ -11,6 +12,7 @@ import { colors } from "../src/theme/colors";
 
 export default function SettingsScreen() {
   const [isVibrationEnabled, setIsVibrationEnabled] = useState(true);
+  const [resetMessage, setResetMessage] = useState("");
 
   useEffect(() => {
     async function loadSettings() {
@@ -25,6 +27,11 @@ export default function SettingsScreen() {
     const nextValue = !isVibrationEnabled;
     setIsVibrationEnabled(nextValue);
     await saveVibrationEnabled(nextValue);
+  }
+
+  async function handleResetBestScore() {
+    await resetBestScore();
+    setResetMessage("Best score reset successfully!");
   }
 
   return (
@@ -52,6 +59,16 @@ export default function SettingsScreen() {
             </Text>
           </Pressable>
         </View>
+
+        <View style={styles.divider} />
+
+        <GameButton
+          title="Reset Best Score"
+          onPress={handleResetBestScore}
+          variant="danger"
+        />
+
+        {resetMessage ? <Text style={styles.successMessage}>{resetMessage}</Text> : null}
 
         <Text style={styles.note}>
           Sound effects and more controls will come in the next update.
@@ -124,5 +141,17 @@ const styles = StyleSheet.create({
     fontSize: 15,
     marginTop: 24,
     lineHeight: 22,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: "rgba(255,255,255,0.12)",
+    marginVertical: 22,
+  },
+  successMessage: {
+    color: colors.success,
+    fontSize: 15,
+    fontWeight: "800",
+    textAlign: "center",
+    marginTop: 12,
   },
 });

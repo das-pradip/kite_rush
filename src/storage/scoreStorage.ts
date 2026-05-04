@@ -18,3 +18,11 @@ export async function saveBestScore(score: number): Promise<void> {
     // Keep game running even if saving fails
   }
 }
+
+export async function resetBestScore(): Promise<void> {
+  try {
+    await AsyncStorage.removeItem(BEST_SCORE_KEY);
+  } catch {
+    // Keep app running even if reset fails
+  }
+}
