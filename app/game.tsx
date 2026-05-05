@@ -122,6 +122,8 @@ export default function GameScreen() {
   const [isGameOver, setIsGameOver] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const [countdown, setCountdown] = useState<string | null>(null);
+  const [hasSeenCountdown, setHasSeenCountdown] = useState(false);
   const [isVibrationEnabled, setIsVibrationEnabled] = useState(true);
 
   const nextObstacleId = useRef(3);
@@ -260,11 +262,28 @@ export default function GameScreen() {
   }, [endGame, hasStarted, isGameOver, isPaused, kiteY, score, velocity]);
 
   async function jump() {
-    if (isGameOver || isPaused) {
+    if (isGameOver || isPaused || countdown) {
       return;
     }
 
     if (!hasStarted) {
+      if (!hasSeenCountdown) {
+        setCountdown("3");
+
+        setTimeout(() => setCountdown("2"), 700);
+        setTimeout(() => setCountdown("1"), 1400);
+        setTimeout(() => setCountdown("Fly!"), 2100);
+
+        setTimeout(() => {
+          setCountdown(null);
+          setHasSeenCountdown(true);
+          setHasStarted(true);
+          setVelocity(JUMP_FORCE);
+        }, 2800);
+
+        return;
+      }
+
       setHasStarted(true);
     }
 
@@ -295,6 +314,7 @@ export default function GameScreen() {
     setIsGameOver(false);
     setHasStarted(false);
     setIsPaused(false);
+    setCountdown(null);
     nextObstacleId.current = 3;
     nextCloudId.current = 4;
   }
@@ -330,9 +350,15 @@ export default function GameScreen() {
           </Text>
         ))}
 
-        {!hasStarted && !isGameOver && (
+        {!hasStarted && !isGameOver && !countdown && (
           <View style={styles.startHint}>
             <Text style={styles.startText}>Tap to Start</Text>
+          </View>
+        )}
+
+        {countdown && !isGameOver && (
+          <View style={styles.countdownBox}>
+            <Text style={styles.countdownText}>{countdown}</Text>
           </View>
         )}
 
@@ -524,6 +550,23 @@ const styles = StyleSheet.create({
   milestoneText: {
     color: colors.primary,
     fontSize: 22,
+    fontWeight: "900",
+  },
+  countdownBox: {
+    position: "absolute",
+    top: "38%",
+    alignSelf: "center",
+    backgroundColor: "rgba(0,0,0,0.38)",
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 26,
+  },
+  countdownText: {
+    color: colors.primary,
+    fontSize: 44,
     fontWeight: "900",
   },
 });
