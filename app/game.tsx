@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Dimensions, Pressable, StyleSheet, Text, View } from "react-native";
 
 import GameOverModal from "../src/components/GameOverModal";
+import BambooObstacle from "../src/components/BambooObstacle";
 import { hasHitObstacle } from "../src/game/collision";
 import {
   GAME_LOOP_MS,
@@ -367,27 +368,9 @@ export default function GameScreen() {
 
           return (
             <View key={obstacle.id}>
-              <View
-                style={[
-                  styles.obstacle,
-                  {
-                    left: obstacle.x,
-                    top: 0,
-                    height: topHeight,
-                  },
-                ]}
-              />
+              <BambooObstacle left={obstacle.x} top={0} height={topHeight} />
 
-              <View
-                style={[
-                  styles.obstacle,
-                  {
-                    left: obstacle.x,
-                    top: bottomTop,
-                    height: bottomHeight,
-                  },
-                ]}
-              />
+              <BambooObstacle left={obstacle.x} top={bottomTop} height={bottomHeight} />
             </View>
           );
         })}
