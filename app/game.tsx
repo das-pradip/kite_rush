@@ -1,5 +1,5 @@
-import { router } from "expo-router";
 import * as Haptics from "expo-haptics";
+import { router } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Dimensions, Pressable, StyleSheet, Text, View } from "react-native";
 
@@ -75,6 +75,31 @@ function createCloud(id: number): Cloud {
   };
 }
 
+function getMilestoneMessage(score: number): string {
+  const messages: Record<number, string> = {
+    5: "Nice Flight!",
+    10: "Great Focus!",
+    15: "You’re Getting Better!",
+    20: "Sky Master!",
+    25: "Smooth Flying!",
+    30: "Kite Legend Begins!",
+    40: "Sharp Reflexes!",
+    50: "Half Century Flight!",
+    60: "Cloud Rider!",
+    75: "Unstoppable!",
+    90: "Wind Warrior!",
+    100: "Century Score!",
+    125: "Elite Flyer!",
+    150: "Sky Champion!",
+    175: "Insane Control!",
+    200: "Double Century!",
+    225: "Legendary Focus!",
+    250: "Kite Rush Master!",
+  };
+
+  return messages[score] ?? "";
+}
+
 export default function GameScreen() {
   const [kiteY, setKiteY] = useState(START_KITE_Y);
   const [velocity, setVelocity] = useState(0);
@@ -92,6 +117,7 @@ export default function GameScreen() {
 
   const [score, setScore] = useState(0);
   const [bestScore, setBestScore] = useState(0);
+  const [milestoneMessage, setMilestoneMessage] = useState("");
   const [isGameOver, setIsGameOver] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -111,6 +137,18 @@ export default function GameScreen() {
 
     loadInitialData();
   }, []);
+
+  useEffect(() => {
+    if (!milestoneMessage) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setMilestoneMessage("");
+    }, 1200);
+
+    return () => clearTimeout(timer);
+  }, [milestoneMessage]);
 
   const endGame = useCallback(async () => {
     if (isGameOver) {
@@ -174,10 +212,19 @@ export default function GameScreen() {
 
         updatedObstacles = updatedObstacles.map((obstacle) => {
           if (!obstacle.passed && obstacle.x + OBSTACLE_WIDTH < KITE_X) {
-            setScore((currentScore) => currentScore + 1);
+            setScore((currentScore) => {
+              const nextScore = currentScore + 1;
+              const message = getMilestoneMessage(nextScore);
+
+              if (message) {
+                setMilestoneMessage(message);
+              }
+
+              return nextScore;
+            });
+
             return { ...obstacle, passed: true };
           }
-
           return obstacle;
         });
 
@@ -243,6 +290,7 @@ export default function GameScreen() {
     ]);
 
     setScore(0);
+    setMilestoneMessage("");
     setIsGameOver(false);
     setHasStarted(false);
     setIsPaused(false);
@@ -286,6 +334,12 @@ export default function GameScreen() {
             <Text style={styles.startText}>Tap to Start</Text>
           </View>
         )}
+
+        {milestoneMessage ? (
+          <View style={styles.milestoneBox}>
+            <Text style={styles.milestoneText}>{milestoneMessage}</Text>
+          </View>
+        ) : null}
 
         {isPaused && !isGameOver && (
           <View style={styles.pauseOverlay}>
@@ -473,5 +527,20 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: "900",
     letterSpacing: 4,
+  },
+  milestoneBox: {
+    position: "absolute",
+    top: "28%",
+    alignSelf: "center",
+    backgroundColor: "rgba(0,0,0,0.35)",
+    paddingVertical: 12,
+    paddingHorizontal: 22,
+    borderRadius: 999,
+    zIndex: 22,
+  },
+  milestoneText: {
+    color: colors.primary,
+    fontSize: 22,
+    fontWeight: "900",
   },
 });
