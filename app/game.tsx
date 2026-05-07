@@ -20,7 +20,10 @@ import {
 
 import { Obstacle } from "../src/game/types";
 import { getBestScore, saveBestScore } from "../src/storage/scoreStorage";
-import { getVibrationEnabled } from "../src/storage/settingsStorage";
+import {
+  getSoundEnabled,
+  getVibrationEnabled,
+} from "../src/storage/settingsStorage";
 import { colors } from "../src/theme/colors";
 import {
   GameSounds,
@@ -134,6 +137,7 @@ export default function GameScreen() {
   const [countdown, setCountdown] = useState<string | null>(null);
   const [hasSeenCountdown, setHasSeenCountdown] = useState(false);
   const [isVibrationEnabled, setIsVibrationEnabled] = useState(true);
+  const [isSoundEnabled, setIsSoundEnabled] = useState(true);
   const [gameSounds, setGameSounds] = useState<GameSounds | null>(null);
 
   const nextObstacleId = useRef(3);
@@ -143,9 +147,11 @@ export default function GameScreen() {
     async function loadInitialData() {
       const storedBestScore = await getBestScore();
       const storedVibrationEnabled = await getVibrationEnabled();
+      const storedSoundEnabled = await getSoundEnabled();
 
       setBestScore(storedBestScore);
       setIsVibrationEnabled(storedVibrationEnabled);
+      setIsSoundEnabled(storedSoundEnabled);
     }
 
     loadInitialData();
@@ -184,8 +190,9 @@ export default function GameScreen() {
     }
 
     setIsGameOver(true);
-
-    playLoadedSound(gameSounds?.gameOver);
+    if (isSoundEnabled) {
+      playLoadedSound(gameSounds?.gameOver);
+    }
 
     if (isVibrationEnabled) {
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -195,7 +202,12 @@ export default function GameScreen() {
       setBestScore(score);
       await saveBestScore(score);
     }
-  }, [bestScore, gameSounds?.gameOver, isGameOver, isVibrationEnabled, score]);
+  }, [bestScore,
+    gameSounds?.gameOver,
+    isGameOver,
+    isSoundEnabled,
+    isVibrationEnabled,
+    score,]);
 
   useEffect(() => {
     if (isGameOver || !hasStarted || isPaused) {
@@ -249,9 +261,9 @@ export default function GameScreen() {
               if (message) {
                 setMilestoneMessage(message);
               }
-
-              playLoadedSound(gameSounds?.score);
-
+              if (isSoundEnabled) {
+                playLoadedSound(gameSounds?.score);
+              }
               return nextScore;
             });
 
@@ -293,6 +305,7 @@ export default function GameScreen() {
     hasStarted,
     isGameOver,
     isPaused,
+    isSoundEnabled,
     kiteY,
     score,
     velocity,]);
@@ -315,7 +328,9 @@ export default function GameScreen() {
           setHasSeenCountdown(true);
           setHasStarted(true);
           setVelocity(JUMP_FORCE);
-          playLoadedSound(gameSounds?.jump);
+          if (isSoundEnabled) {
+            playLoadedSound(gameSounds?.jump);
+          }
         }, 2800);
 
         return;
@@ -325,7 +340,9 @@ export default function GameScreen() {
     }
 
     setVelocity(JUMP_FORCE);
-    playLoadedSound(gameSounds?.jump);
+    if (isSoundEnabled) {
+      playLoadedSound(gameSounds?.jump);
+    }
 
     if (isVibrationEnabled) {
       await Haptics.selectionAsync();

@@ -5,21 +5,26 @@ import { resetBestScore } from "../src/storage/scoreStorage";
 
 import GameButton from "../src/components/GameButton";
 import {
+  getSoundEnabled,
   getVibrationEnabled,
+  saveSoundEnabled,
   saveVibrationEnabled,
 } from "../src/storage/settingsStorage";
 import { colors } from "../src/theme/colors";
 
 export default function SettingsScreen() {
   const [isVibrationEnabled, setIsVibrationEnabled] = useState(true);
+  const [isSoundEnabled, setIsSoundEnabled] = useState(true);
   const [resetMessage, setResetMessage] = useState("");
 
   useEffect(() => {
     async function loadSettings() {
       const storedVibrationEnabled = await getVibrationEnabled();
-      setIsVibrationEnabled(storedVibrationEnabled);
-    }
+      const storedSoundEnabled = await getSoundEnabled();
 
+      setIsVibrationEnabled(storedVibrationEnabled);
+      setIsSoundEnabled(storedSoundEnabled);
+    }
     loadSettings();
   }, []);
 
@@ -27,6 +32,12 @@ export default function SettingsScreen() {
     const nextValue = !isVibrationEnabled;
     setIsVibrationEnabled(nextValue);
     await saveVibrationEnabled(nextValue);
+  }
+
+  async function toggleSound() {
+    const nextValue = !isSoundEnabled;
+    setIsSoundEnabled(nextValue);
+    await saveSoundEnabled(nextValue);
   }
 
   async function handleResetBestScore() {
@@ -39,6 +50,29 @@ export default function SettingsScreen() {
       <Text style={styles.title}>Settings</Text>
 
       <View style={styles.card}>
+        <View style={styles.settingRow}>
+          <View>
+            <Text style={styles.settingTitle}>Sound</Text>
+            <Text style={styles.settingDescription}>
+              Play jump, score, and game over sounds.
+            </Text>
+          </View>
+
+          <Pressable
+            onPress={toggleSound}
+            style={[
+              styles.toggle,
+              isSoundEnabled ? styles.toggleOn : styles.toggleOff,
+            ]}
+          >
+            <Text style={styles.toggleText}>
+              {isSoundEnabled ? "ON" : "OFF"}
+            </Text>
+          </Pressable>
+        </View>
+
+        <View style={styles.smallDivider} />
+
         <View style={styles.settingRow}>
           <View>
             <Text style={styles.settingTitle}>Vibration</Text>
@@ -68,10 +102,12 @@ export default function SettingsScreen() {
           variant="danger"
         />
 
-        {resetMessage ? <Text style={styles.successMessage}>{resetMessage}</Text> : null}
+        {resetMessage ? (
+          <Text style={styles.successMessage}>{resetMessage}</Text>
+        ) : null}
 
         <Text style={styles.note}>
-          Sound effects and more controls will come in the next update.
+          Sound and vibration settings are saved on this device.
         </Text>
       </View>
 
@@ -153,5 +189,10 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     textAlign: "center",
     marginTop: 12,
+  },
+  smallDivider: {
+    height: 1,
+    backgroundColor: "rgba(255,255,255,0.08)",
+    marginVertical: 18,
   },
 });
