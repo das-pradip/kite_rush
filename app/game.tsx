@@ -6,6 +6,7 @@ import { Dimensions, Pressable, StyleSheet, Text, View } from "react-native";
 import GameOverModal from "../src/components/GameOverModal";
 import BambooObstacle from "../src/components/BambooObstacle";
 import { hasHitObstacle } from "../src/game/collision";
+
 import {
   GAME_LOOP_MS,
   GRAVITY,
@@ -15,10 +16,18 @@ import {
   OBSTACLE_GAP,
   OBSTACLE_WIDTH,
 } from "../src/game/constants";
+
+
 import { Obstacle } from "../src/game/types";
 import { getBestScore, saveBestScore } from "../src/storage/scoreStorage";
 import { getVibrationEnabled } from "../src/storage/settingsStorage";
 import { colors } from "../src/theme/colors";
+import {
+  GameSounds,
+  loadGameSounds,
+  playLoadedSound,
+  unloadGameSounds,
+} from "../src/game/sounds";
 
 type Cloud = {
   id: number;
@@ -125,6 +134,7 @@ export default function GameScreen() {
   const [countdown, setCountdown] = useState<string | null>(null);
   const [hasSeenCountdown, setHasSeenCountdown] = useState(false);
   const [isVibrationEnabled, setIsVibrationEnabled] = useState(true);
+  const [gameSounds, setGameSounds] = useState<GameSounds | null>(null);
 
   const nextObstacleId = useRef(3);
   const nextCloudId = useRef(4);
@@ -139,6 +149,21 @@ export default function GameScreen() {
     }
 
     loadInitialData();
+  }, []);
+
+  useEffect(() => {
+    let loadedSounds: GameSounds | null = null;
+
+    async function prepareSounds() {
+      loadedSounds = await loadGameSounds();
+      setGameSounds(loadedSounds);
+    }
+
+    prepareSounds();
+
+    return () => {
+      unloadGameSounds(loadedSounds);
+    };
   }, []);
 
   useEffect(() => {
@@ -160,6 +185,8 @@ export default function GameScreen() {
 
     setIsGameOver(true);
 
+    playLoadedSound(gameSounds?.gameOver);
+
     if (isVibrationEnabled) {
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     }
@@ -168,7 +195,7 @@ export default function GameScreen() {
       setBestScore(score);
       await saveBestScore(score);
     }
-  }, [bestScore, isGameOver, isVibrationEnabled, score]);
+  }, [bestScore, gameSounds?.gameOver, isGameOver, isVibrationEnabled, score]);
 
   useEffect(() => {
     if (isGameOver || !hasStarted || isPaused) {
@@ -223,6 +250,8 @@ export default function GameScreen() {
                 setMilestoneMessage(message);
               }
 
+              playLoadedSound(gameSounds?.score);
+
               return nextScore;
             });
 
@@ -259,7 +288,14 @@ export default function GameScreen() {
     }, GAME_LOOP_MS);
 
     return () => clearInterval(gameLoop);
-  }, [endGame, hasStarted, isGameOver, isPaused, kiteY, score, velocity]);
+  }, [endGame,
+    gameSounds?.score,
+    hasStarted,
+    isGameOver,
+    isPaused,
+    kiteY,
+    score,
+    velocity,]);
 
   async function jump() {
     if (isGameOver || isPaused || countdown) {
@@ -279,6 +315,7 @@ export default function GameScreen() {
           setHasSeenCountdown(true);
           setHasStarted(true);
           setVelocity(JUMP_FORCE);
+          playLoadedSound(gameSounds?.jump);
         }, 2800);
 
         return;
@@ -288,6 +325,7 @@ export default function GameScreen() {
     }
 
     setVelocity(JUMP_FORCE);
+    playLoadedSound(gameSounds?.jump);
 
     if (isVibrationEnabled) {
       await Haptics.selectionAsync();
