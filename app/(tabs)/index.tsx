@@ -8,7 +8,7 @@ export default function HomeScreen() {
     <View style={styles.container}>
       <View style={styles.hero}>
         <Text style={styles.kite}>🪁</Text>
-        <Text style={styles.title}>Kite Rush</Text>
+        <Text style={styles.title}>Kite Glide</Text>
         <Text style={styles.subtitle}>
           Tap. Fly. Dodge. Beat your best score.
         </Text>

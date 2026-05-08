@@ -107,7 +107,7 @@ function getMilestoneMessage(score: number): string {
     175: "Insane Control!",
     200: "Double Century!",
     225: "Legendary Focus!",
-    250: "Kite Rush Master!",
+    250: "Kite Glide Master!",
   };
 
   return messages[score] ?? "";
@@ -457,7 +457,7 @@ export default function GameScreen() {
         })}
 
         <View style={styles.ground}>
-          <Text style={styles.groundText}>KITE RUSH</Text>
+          <Text style={styles.groundText}>KITE GLIDE</Text>
         </View>
 
         {isGameOver && (

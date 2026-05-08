@@ -27,7 +27,7 @@ export default function GameOverModal({
                         title="Share Score"
                         onPress={() =>
                             Share.share({
-                                message: `I scored ${score} in Kite Rush 🪁 Can you beat me?`,
+                                message: `I scored ${score} in Kite Glide 🪁 Can you beat me?`,
                             })
                         }
                     />

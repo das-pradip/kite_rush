@@ -1,17 +1,19 @@
 {
   "expo": {
-    "name": "kite-rush",
-    "slug": "kite-rush",
+    "name": "Kite Glide",
+    "slug": "kite-glide",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "kiterush",
+    "scheme": "kiteglide",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true
     },
     "android": {
+      "package": "com.pradipdas.kiteglide",
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
