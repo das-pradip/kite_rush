@@ -46,7 +46,8 @@
         }
       ],
       "expo-audio",
-      "expo-adi-registration"      
+      "expo-adi-registration",
+      "expo-asset"
     ],
     "experiments": {
       "typedRoutes": true,
